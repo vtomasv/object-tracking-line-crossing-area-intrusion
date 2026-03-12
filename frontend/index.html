@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Object Tracking - Zone Analyzer</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <!-- Custom styles -->
+  <link href="style.css" rel="stylesheet" />
+</head>
+<body class="bg-dark text-light">
+
+<!-- ── Navbar ─────────────────────────────────────────────────────────────── -->
+<nav class="navbar navbar-dark bg-black border-bottom border-secondary px-3 py-2">
+  <div class="d-flex align-items-center gap-3">
+    <span class="fs-4">🎯</span>
+    <div>
+      <span class="fw-bold fs-5">Object Tracking</span>
+      <span class="text-secondary ms-2 small">Zone Analyzer</span>
+    </div>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <span id="ov-badge" class="badge bg-secondary">OpenVINO: checking…</span>
+    <a href="https://github.com/vtomasv/object-tracking-line-crossing-area-intrusion"
+       target="_blank" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-github"></i> GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- ── Main layout ─────────────────────────────────────────────────────────── -->
+<div class="container-fluid p-0" style="height:calc(100vh - 56px);">
+  <div class="row g-0 h-100">
+
+    <!-- ── Left sidebar: steps ──────────────────────────────────────────── -->
+    <div class="col-auto bg-black border-end border-secondary d-flex flex-column" style="width:64px;">
+      <div class="step-btn active" data-step="1" title="1. Subir Video">
+        <i class="bi bi-cloud-upload fs-4"></i><div class="step-num">1</div>
+      </div>
+      <div class="step-btn" data-step="2" title="2. Definir Zonas">
+        <i class="bi bi-vector-pen fs-4"></i><div class="step-num">2</div>
+      </div>
+      <div class="step-btn" data-step="3" title="3. Procesar">
+        <i class="bi bi-cpu fs-4"></i><div class="step-num">3</div>
+      </div>
+      <div class="step-btn" data-step="4" title="4. Resultados">
+        <i class="bi bi-bar-chart-line fs-4"></i><div class="step-num">4</div>
+      </div>
+    </div>
+
+    <!-- ── Content area ─────────────────────────────────────────────────── -->
+    <div class="col overflow-auto p-3" id="content-area">
+
+      <!-- STEP 1: Upload -->
+      <div id="step-1" class="step-panel active">
+        <h4 class="mb-3"><i class="bi bi-cloud-upload me-2 text-primary"></i>Subir Video</h4>
+
+        <!-- Drop zone -->
+        <div id="drop-zone" class="drop-zone mb-4">
+          <div class="text-center py-5">
+            <i class="bi bi-film fs-1 text-secondary mb-3 d-block"></i>
+            <p class="fs-5 mb-1">Arrastra tu video aquí</p>
+            <p class="text-secondary small mb-3">MP4, AVI, MOV, MKV, H264 — hasta 2 GB</p>
+            <button class="btn btn-primary px-4" onclick="document.getElementById('file-input').click()">
+              <i class="bi bi-folder2-open me-2"></i>Seleccionar archivo
+            </button>
+            <input type="file" id="file-input" accept="video/*,.264,.h264" class="d-none" />
+          </div>
+        </div>
+
+        <!-- Upload progress -->
+        <div id="upload-progress" class="d-none mb-4">
+          <div class="d-flex justify-content-between mb-1">
+            <span id="upload-filename" class="small text-secondary"></span>
+            <span id="upload-pct" class="small text-secondary">0%</span>
+          </div>
+          <div class="progress" style="height:6px;">
+            <div id="upload-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                 style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Video info card -->
+        <div id="video-info-card" class="d-none">
+          <div class="card bg-dark border-secondary">
+            <div class="card-body">
+              <div class="row g-3 align-items-center">
+                <div class="col-auto">
+                  <img id="video-thumb" src="" alt="thumb" class="rounded" style="width:160px;height:90px;object-fit:cover;" />
+                </div>
+                <div class="col">
+                  <h6 id="video-name" class="mb-1"></h6>
+                  <div class="row g-2 text-secondary small">
+                    <div class="col-auto"><i class="bi bi-aspect-ratio me-1"></i><span id="video-res"></span></div>
+                    <div class="col-auto"><i class="bi bi-camera-video me-1"></i><span id="video-fps"></span> fps</div>
+                    <div class="col-auto"><i class="bi bi-clock me-1"></i><span id="video-dur"></span>s</div>
+                    <div class="col-auto"><i class="bi bi-collection-play me-1"></i><span id="video-frames"></span> frames</div>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-success" onclick="goToStep(2)">
+                    Definir Zonas <i class="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sample video -->
+        <div class="mt-4">
+          <p class="text-secondary small mb-2">O usa el video de demostración incluido:</p>
+          <button class="btn btn-outline-secondary btn-sm" onclick="loadSampleVideo()">
+            <i class="bi bi-play-circle me-2"></i>Cargar video de muestra (people-detection)
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Define Zones -->
+      <div id="step-2" class="step-panel d-none">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="mb-0"><i class="bi bi-vector-pen me-2 text-warning"></i>Definir Zonas</h4>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="goToStep(1)">
+              <i class="bi bi-arrow-left me-1"></i>Volver
+            </button>
+            <button class="btn btn-sm btn-success" onclick="goToStep(3)" id="btn-to-process">
+              Procesar <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <!-- Canvas panel -->
+          <div class="col-lg-8">
+            <div class="card bg-dark border-secondary">
+              <div class="card-header border-secondary d-flex justify-content-between align-items-center py-2">
+                <div class="d-flex gap-2 align-items-center">
+                  <span class="small text-secondary">Herramienta:</span>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <input type="radio" class="btn-check" name="tool" id="tool-wire" value="wire" checked />
+                    <label class="btn btn-outline-warning" for="tool-wire">
+                      <i class="bi bi-slash-lg me-1"></i>Línea (Wire)
+                    </label>
+                    <input type="radio" class="btn-check" name="tool" id="tool-area" value="area" />
+                    <label class="btn btn-outline-info" for="tool-area">
+                      <i class="bi bi-pentagon me-1"></i>Área
+                    </label>
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-danger" onclick="undoLastPoint()" title="Deshacer último punto">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" onclick="clearCanvas()" title="Limpiar todo">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body p-0 position-relative">
+                <canvas id="zone-canvas" class="d-block w-100" style="cursor:crosshair;max-height:480px;"></canvas>
+                <div id="canvas-hint" class="position-absolute bottom-0 start-0 end-0 text-center p-2 small text-secondary bg-black bg-opacity-75">
+                  Haz clic para agregar puntos. <strong>Wire</strong>: 2 puntos. <strong>Área</strong>: 3+ puntos, doble-clic o Enter para cerrar.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Zones list -->
+          <div class="col-lg-4">
+            <div class="card bg-dark border-secondary h-100">
+              <div class="card-header border-secondary py-2">
+                <span class="fw-semibold">Zonas definidas</span>
+                <span id="zone-count" class="badge bg-secondary ms-2">0</span>
+              </div>
+              <div class="card-body p-2 overflow-auto" style="max-height:400px;" id="zones-list">
+                <div class="text-center text-secondary py-4 small" id="zones-empty">
+                  <i class="bi bi-info-circle d-block fs-3 mb-2"></i>
+                  Aún no hay zonas definidas.<br/>Dibuja líneas o áreas en el canvas.
+                </div>
+              </div>
+              <div class="card-footer border-secondary py-2">
+                <div class="mb-2">
+                  <label class="form-label small mb-1">Nombre de la zona</label>
+                  <input type="text" id="zone-name-input" class="form-control form-control-sm bg-dark text-light border-secondary"
+                         placeholder="Ej: Entrada Principal" />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label small mb-1">Color</label>
+                  <input type="color" id="zone-color-input" class="form-control form-control-color form-control-sm"
+                         value="#00ff88" />
+                </div>
+                <button class="btn btn-sm btn-primary w-100" onclick="finishCurrentZone()">
+                  <i class="bi bi-check-lg me-1"></i>Guardar zona actual
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Process -->
+      <div id="step-3" class="step-panel d-none">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="mb-0"><i class="bi bi-cpu me-2 text-info"></i>Procesar Video</h4>
+          <button class="btn btn-sm btn-outline-secondary" onclick="goToStep(2)">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+          </button>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-5">
+            <div class="card bg-dark border-secondary">
+              <div class="card-header border-secondary py-2 fw-semibold">Configuración</div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label small">Confianza mínima de detección</label>
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="range" class="form-range flex-grow-1" id="conf-slider"
+                           min="0.3" max="0.95" step="0.05" value="0.75"
+                           oninput="document.getElementById('conf-val').textContent=parseFloat(this.value).toFixed(2)" />
+                    <span id="conf-val" class="badge bg-primary" style="min-width:40px;">0.75</span>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small">Dispositivo de inferencia</label>
+                  <select class="form-select form-select-sm bg-dark text-light border-secondary" id="device-select">
+                    <option value="CPU" selected>CPU</option>
+                    <option value="GPU">GPU</option>
+                    <option value="AUTO">AUTO</option>
+                  </select>
+                </div>
+                <hr class="border-secondary" />
+                <div id="process-zones-summary" class="small text-secondary mb-3"></div>
+                <button class="btn btn-success w-100 py-2" id="btn-start-process" onclick="startProcessing()">
+                  <i class="bi bi-play-fill me-2"></i>Iniciar Procesamiento
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-7">
+            <div class="card bg-dark border-secondary">
+              <div class="card-header border-secondary py-2 fw-semibold">Progreso</div>
+              <div class="card-body">
+                <div id="process-idle" class="text-center text-secondary py-5">
+                  <i class="bi bi-hourglass fs-1 d-block mb-3"></i>
+                  Configura los parámetros y presiona <strong>Iniciar Procesamiento</strong>
+                </div>
+                <div id="process-running" class="d-none">
+                  <div class="d-flex justify-content-between mb-2">
+                    <span class="small">Procesando frames…</span>
+                    <span id="proc-pct" class="small fw-bold text-info">0%</span>
+                  </div>
+                  <div class="progress mb-3" style="height:10px;">
+                    <div id="proc-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                         style="width:0%"></div>
+                  </div>
+                  <div id="proc-stats" class="row g-2 text-center small"></div>
+                </div>
+                <div id="process-done" class="d-none text-center py-4">
+                  <i class="bi bi-check-circle-fill fs-1 text-success d-block mb-3"></i>
+                  <p class="fs-5 mb-3">¡Procesamiento completado!</p>
+                  <button class="btn btn-success px-4" onclick="goToStep(4)">
+                    Ver Resultados <i class="bi bi-arrow-right ms-1"></i>
+                  </button>
+                </div>
+                <div id="process-error" class="d-none text-center py-4">
+                  <i class="bi bi-exclamation-triangle-fill fs-1 text-danger d-block mb-3"></i>
+                  <p id="process-error-msg" class="text-danger mb-3"></p>
+                  <button class="btn btn-outline-secondary" onclick="resetProcessing()">Reintentar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: Results -->
+      <div id="step-4" class="step-panel d-none">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="mb-0"><i class="bi bi-bar-chart-line me-2 text-success"></i>Resultados</h4>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="goToStep(1)">
+              <i class="bi bi-plus-lg me-1"></i>Nuevo Video
+            </button>
+            <a id="btn-download" href="#" class="btn btn-sm btn-success" download>
+              <i class="bi bi-download me-1"></i>Descargar Video
+            </a>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <!-- Video result -->
+          <div class="col-lg-8">
+            <div class="card bg-dark border-secondary">
+              <div class="card-header border-secondary py-2 fw-semibold">Video Procesado</div>
+              <div class="card-body p-0">
+                <video id="result-video" class="w-100 rounded-bottom" controls style="max-height:480px;background:#000;">
+                  Tu navegador no soporta la reproducción de video.
+                </video>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="col-lg-4">
+            <div class="card bg-dark border-secondary mb-3">
+              <div class="card-header border-secondary py-2 fw-semibold">Estadísticas Generales</div>
+              <div class="card-body p-2" id="stats-general"></div>
+            </div>
+            <div class="card bg-dark border-secondary mb-3">
+              <div class="card-header border-secondary py-2 fw-semibold">Eventos por Línea</div>
+              <div class="card-body p-2" id="stats-wires"></div>
+            </div>
+            <div class="card bg-dark border-secondary">
+              <div class="card-header border-secondary py-2 fw-semibold">Eventos por Área</div>
+              <div class="card-body p-2" id="stats-areas"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- App JS -->
+<script src="app.js"></script>
+</body>
+</html>

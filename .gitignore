@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*.so
+.env
+.venv/
+env/
+venv/
+
+# Uploads and results (user data)
+uploads/
+results/
+cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

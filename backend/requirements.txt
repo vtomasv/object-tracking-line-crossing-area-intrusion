@@ -1,0 +1,11 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+pydantic==2.8.2
+opencv-python-headless==4.10.0.84
+numpy==1.26.4
+scipy==1.13.1
+munkres==1.1.4
+pyyaml==6.0.2
+openvino==2025.0.0
+aiofiles==23.2.1

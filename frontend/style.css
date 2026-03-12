@@ -1,0 +1,143 @@
+/* ── Base ────────────────────────────────────────────────────────────────── */
+:root {
+  --accent: #0d6efd;
+  --bg-card: #1a1a2e;
+  --border: #2d2d44;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* ── Sidebar steps ───────────────────────────────────────────────────────── */
+.step-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 0;
+  cursor: pointer;
+  color: #6c757d;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+  gap: 4px;
+}
+
+.step-btn:hover {
+  color: #adb5bd;
+  background: rgba(255,255,255,0.05);
+}
+
+.step-btn.active {
+  color: #fff;
+  border-left-color: var(--accent);
+  background: rgba(13,110,253,0.12);
+}
+
+.step-btn.done {
+  color: #198754;
+  border-left-color: #198754;
+}
+
+.step-num {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ── Step panels ─────────────────────────────────────────────────────────── */
+.step-panel {
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Drop zone ───────────────────────────────────────────────────────────── */
+.drop-zone {
+  border: 2px dashed #444;
+  border-radius: 12px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.drop-zone:hover,
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(13,110,253,0.06);
+}
+
+/* ── Canvas ──────────────────────────────────────────────────────────────── */
+#zone-canvas {
+  display: block;
+  background: #000;
+  border-radius: 0 0 0 0;
+}
+
+/* ── Zone list items ─────────────────────────────────────────────────────── */
+.zone-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.15s;
+}
+
+.zone-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.zone-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.zone-type-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.zone-type-wire  { background: rgba(255,193,7,0.2);  color: #ffc107; }
+.zone-type-area  { background: rgba(13,202,240,0.2); color: #0dcaf0; }
+
+/* ── Stats cards ─────────────────────────────────────────────────────────── */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  background: rgba(255,255,255,0.04);
+}
+
+.stat-label { font-size: 12px; color: #adb5bd; }
+.stat-value { font-size: 14px; font-weight: 700; }
+
+/* ── Progress bars ───────────────────────────────────────────────────────── */
+.progress {
+  background: rgba(255,255,255,0.08);
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #666; }
+
+/* ── Responsive tweaks ───────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .col-auto[style*="width:64px"] { width: 48px !important; }
+  .step-btn { padding: 10px 0; }
+}

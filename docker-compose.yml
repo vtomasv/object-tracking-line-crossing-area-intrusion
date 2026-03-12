@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  object-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: object-tracking-web:latest
+    container_name: object-tracking-web
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist uploads and results between container restarts
+      - uploads_data:/app/uploads
+      - results_data:/app/results
+      - cache_data:/app/cache
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OMP_NUM_THREADS=4
+    restart: unless-stopped
+    # Uncomment to limit resources on Apple M3 Max
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "8"
+    #       memory: "16G"
+
+volumes:
+  uploads_data:
+    driver: local
+  results_data:
+    driver: local
+  cache_data:
+    driver: local
