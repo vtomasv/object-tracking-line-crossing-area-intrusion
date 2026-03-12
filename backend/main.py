@@ -214,6 +214,8 @@ def process_video_job(job_id: str, video_path: str, zones: List[Zone],
             raise RuntimeError(f"Cannot open video: {video_path}")
 
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        if total_frames < 0:
+            total_frames = 0   # raw H.264 may report -1
         fps_in       = cap.get(cv2.CAP_PROP_FPS) or 25
         width        = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height       = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -471,7 +473,10 @@ def _video_meta(video_id: str, path: Path, original_name: str) -> dict:
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps    = cap.get(cv2.CAP_PROP_FPS)
     frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    dur    = frames / fps if fps > 0 else 0
+    # Some codecs (e.g. raw H.264) report negative frame count
+    if frames < 0:
+        frames = 0
+    dur    = frames / fps if fps > 0 and frames > 0 else 0
     ret, thumb_frame = cap.read()
     cap.release()
 
