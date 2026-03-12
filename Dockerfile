@@ -1,4 +1,6 @@
-# ── Stage 1: Base image ───────────────────────────────────────────────────────
+# ── Base image ────────────────────────────────────────────────────────────────
+# python:3.11-slim uses Debian Trixie on ARM64 (Apple M3/M4).
+# libgl1-mesa-glx was removed in Trixie; use libgl1 instead (available on all arches).
 FROM python:3.11-slim
 
 # System dependencies
@@ -9,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
     libxrender-dev \
     libgomp1 \
-    libgl1-mesa-glx \
+    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Working directory
